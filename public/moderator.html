@@ -1,0 +1,122 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>Moderator Panel</title>
+  <link rel="stylesheet" href="/style.css"/>
+</head>
+<body class="moderator">
+  <div class="container">
+    <div class="header">
+      <h1>Moderator Panel</h1>
+      <div>
+        <span>Session ID:</span>
+        <span id="sidBadge" class="badge">0000</span>
+      </div>
+    </div>
+
+    <div class="grid mod" style="margin-top:16px;">
+      <!-- Left column: controls and players -->
+      <div class="card">
+        <div class="grid" style="grid-template-columns: 1fr 1fr; gap:12px;">
+          <button id="startBtn" class="btn btn-gray">Start Game</button>
+          <button id="resetBtn" class="btn">Reset Game</button>
+          <a id="csvBtn" class="btn btn-outline" download>Export CSV</a>
+        </div>
+        <div style="margin-top:18px;">
+          <div class="section-title">Players Joined:</div>
+          <div id="players" class="list"></div>
+        </div>
+      </div>
+
+      <!-- Right column: submissions -->
+      <div class="card">
+        <div class="section-title">Submissions</div>
+        <div id="subs" class="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const sid = params.get("sid");
+    if (!sid) location.href="/";
+    document.getElementById("sidBadge").textContent = sid;
+
+    const playersEl = document.getElementById("players");
+    const subsEl = document.getElementById("subs");
+    const startBtn = document.getElementById("startBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const csvBtn = document.getElementById("csvBtn");
+    csvBtn.href = `/api/session/${sid}/submissions.csv`;
+
+    function format(ts) {
+      const d = new Date(ts);
+      const pad = (n, z=2)=>(''+n).padStart(z,'0');
+      return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(),3)}`;
+    }
+    function renderPlayers(list){
+      playersEl.innerHTML = "";
+      list.forEach(name => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<div class="name">${name}</div>`;
+        playersEl.appendChild(div);
+      });
+    }
+    function renderSubs(list){
+      subsEl.innerHTML = "";
+      list.sort((a,b)=>a.ts-b.ts).forEach(s=>{
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<div class="name">${s.name}</div><div class="time">${format(s.ts)}</div>`;
+        subsEl.appendChild(div);
+      });
+    }
+    function setActiveUI(active){
+      if (active) {
+        startBtn.textContent = "Game is Active!";
+        startBtn.className = "btn btn-green";
+      } else {
+        startBtn.textContent = "Start Game";
+        startBtn.className = "btn btn-gray";
+      }
+    }
+
+    const socket = io();
+    socket.emit("join_session", { sid, role: "moderator" });
+
+    socket.on("state", (st)=>{
+      setActiveUI(st.active);
+      renderPlayers(st.players || []);
+      renderSubs(st.submissions || []);
+    });
+    socket.on("player_joined", (p)=>{
+      renderPlayers(p.players || []);
+    });
+    socket.on("new_submission", (s)=>{
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `<div class="name">${s.name}</div><div class="time">${format(s.ts)}</div>`;
+      subsEl.appendChild(div);
+    });
+    socket.on("game_state", ({active})=>{
+      setActiveUI(active);
+    });
+    socket.on("reset", ()=>{
+      subsEl.innerHTML = "";
+      setActiveUI(false);
+    });
+
+    startBtn.addEventListener("click", ()=>{
+      socket.emit("start_game", { sid });
+    });
+    resetBtn.addEventListener("click", ()=>{
+      socket.emit("reset_game", { sid });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+
+:root{
+  --bg:#f5f7fb;
+  --fg:#222;
+  --muted:#6b7280;
+  --card:#ffffff;
+  --brand:#4f46e5;
+  --good:#16a34a;
+  --bad:#ef4444;
+  --neutral:#a3a3a3;
+}
+*{ box-sizing:border-box; }
+html,body{
+  margin:0; padding:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background:var(--bg); color:var(--fg);
+}
+.container{ max-width:1100px; margin:32px auto; padding:0 16px; }
+.card{
+  background:var(--card); border-radius:16px; box-shadow: 0 10px 25px rgba(0,0,0,.06);
+  padding:20px;
+}
+h1,h2,h3{ margin:0 0 12px 0; }
+label{ display:block; margin:8px 0 6px; font-weight:600;}
+input[type="text"]{
+  width:100%; padding:12px 14px; border:1px solid #e5e7eb; border-radius:12px; font-size:16px;
+}
+.input-row{ display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+.btn{
+  border:0; border-radius:12px; padding:12px 16px; font-weight:700; cursor:pointer; font-size:16px;
+  background:#e5e7eb; color:#111; transition:transform .02s ease, background .12s ease;
+}
+.btn:active{ transform: translateY(1px); }
+.btn-primary{ background:var(--brand); color:white; }
+.btn-green{ background:var(--good); color:white; }
+.btn-gray{ background:var(--neutral); color:white; }
+.btn-red{ background:var(--bad); color:white; }
+.btn-outline{ background:transparent; border:2px solid var(--brand); color:var(--brand); }
+
+.grid{
+  display:grid; gap:16px;
+}
+.grid.mod{
+  grid-template-columns: 1fr 2fr;
+}
+
+/* Moderator landscape guard */
+@media (orientation:portrait) {
+  body.moderator::before{
+    content: "Rotate your device to landscape to use the Moderator Panel";
+    position: fixed; inset: 0; background: rgba(0,0,0,.85); color: white;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    padding: 32px; font-size: 24px; z-index: 9999;
+  }
+}
+
+/* Big Circle Button */
+.big-wrap{ display:flex; justify-content:center; align-items:center; min-height:70vh;}
+.big-btn{
+  width: 280px; height: 280px; border-radius: 9999px; display:flex; align-items:center; justify-content:center;
+  font-size: 42px; letter-spacing: 1px; font-weight:800; border: 10px solid rgba(255,255,255,.6);
+  box-shadow: 0 10px 30px rgba(0,0,0,.15);
+}
+.big-btn.red{ background:#ef4444; color:white; }
+.big-btn.green{ background:#16a34a; color:white; }
+.big-btn.gray{ background:#9ca3af; color:white; cursor:not-allowed; }
+
+/* List styles */
+.list{
+  display:flex; flex-direction:column; gap:8px;
+  max-height: 70vh; overflow:auto; padding-right:6px;
+}
+.item{
+  display:flex; justify-content:space-between; align-items:center;
+  background:#f8fafc; border-radius:12px; padding:10px 12px; border:1px solid #edf2f7;
+}
+.item .name{ font-weight:700; }
+.item .time{ color:var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 12px; }
+
+/* Titles */
+.section-title{
+  font-weight:800; margin-bottom:8px; font-size:18px;
+}
+
+/* Header actions */
+.header{
+  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+}
+.badge{
+  font-weight:900; font-size:28px; color:#ef4444; background:#fee2e2; border-radius:12px; padding:4px 10px;
+}
+.badge.green{ color:#16a34a; background:#dcfce7; }
+
+/* Footer note */
+.note{ color:var(--muted); font-size:14px; margin-top:6px;}

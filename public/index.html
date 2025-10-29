@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Fastest Finger</title>
+  <link rel="stylesheet" href="/style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>Fastest Finger</h1>
+    <p class="note">A lightweight real‑time buzzer for classroom/camp activities.</p>
+
+    <div class="grid" style="grid-template-columns:1fr 1fr; gap:24px; margin-top:18px;">
+      <div class="card">
+        <h2>Create</h2>
+        <p>Create a new 4‑digit Session ID for your room.</p>
+        <form id="createForm" class="input-row">
+          <div style="flex:1; min-width:180px;">
+            <label for="createSid">Session ID (4 digits)</label>
+            <input id="createSid" name="sid" type="text" inputmode="numeric" pattern="\d{4}" maxlength="4" placeholder="e.g. 5224" required />
+          </div>
+          <button class="btn btn-primary" type="submit">Create</button>
+        </form>
+        <p id="createError" class="note" style="color:#ef4444; display:none;"></p>
+      </div>
+
+      <div class="card">
+        <h2>Join</h2>
+        <p>Join an existing session and get your buzzer.</p>
+        <form id="joinForm" class="grid" style="grid-template-columns:1fr 1fr;">
+          <div>
+            <label for="joinSid">Session ID (4 digits)</label>
+            <input id="joinSid" name="sid" type="text" inputmode="numeric" pattern="\d{4}" maxlength="4" placeholder="e.g. 5224" required />
+          </div>
+          <div>
+            <label for="joinName">Your Name (English, ≤20)</label>
+            <input id="joinName" name="name" type="text" maxlength="20" pattern="[A-Za-z]{1,20}" placeholder="e.g. Tuck" required/>
+          </div>
+          <div style="grid-column:1 / -1;">
+            <button class="btn btn-primary" type="submit">Join</button>
+          </div>
+        </form>
+        <p class="note">Names must be English letters only (A–Z/a–z). No spaces. Max 20 chars.</p>
+        <p id="joinError" class="note" style="color:#ef4444; display:none;"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = sel => document.querySelector(sel);
+
+    // Create
+    $("#createForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const sid = $("#createSid").value.trim();
+      if (!/^\d{4}$/.test(sid)) {
+        const el = $("#createError");
+        el.textContent = "Session ID must be exactly 4 digits (0000–9999).";
+        el.style.display = "block";
+        return;
+      }
+      const res = await fetch("/api/session", {
+        method:"POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ sid })
+      });
+      if (res.ok) {
+        location.href = `/moderator.html?sid=${sid}`;
+      } else {
+        const data = await res.json().catch(()=>({error:"Failed to create"}));
+        const el = $("#createError"); el.textContent = data.error || "Failed to create session."; el.style.display = "block";
+      }
+    });
+
+    // Join
+    $("#joinForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const sid = $("#joinSid").value.trim();
+      const name = $("#joinName").value.trim();
+      if (!/^\d{4}$/.test(sid)) {
+        const el = $("#joinError"); el.textContent = "Session ID must be exactly 4 digits."; el.style.display = "block"; return;
+      }
+      if (!/^[A-Za-z]{1,20}$/.test(name)) {
+        const el = $("#joinError"); el.textContent = "Name must be English letters only (A–Z/a–z), up to 20 chars, no spaces."; el.style.display = "block"; return;
+      }
+      const res = await fetch(`/api/session/${sid}/join`, {
+        method:"POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ name })
+      });
+      const data = await res.json().catch(()=>({}));
+      if (res.ok && data.ok) {
+        location.href = `/player.html?sid=${sid}&name=${encodeURIComponent(name)}`;
+      } else {
+        const el = $("#joinError"); el.textContent = data.error || "Failed to join."; el.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Buzzer</title>
+  <link rel="stylesheet" href="/style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h2 id="welcome">Welcome</h2>
+    <div class="big-wrap">
+      <button id="big" class="big-btn red">WAIT</button>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const sid = params.get("sid");
+    const name = params.get("name");
+    if (!sid || !name) location.href="/";
+    document.getElementById("welcome").textContent = `Welcome, ${name}!`;
+
+    let active = false;
+    let locked = false; // locked due to foul or after buzz
+
+    function setWait(){
+      const btn = document.getElementById("big");
+      btn.className = "big-btn red";
+      btn.textContent = "WAIT";
+      locked = false; // unlocked on reset
+    }
+    function setActive(){
+      const btn = document.getElementById("big");
+      btn.className = "big-btn green";
+      btn.textContent = "BUZZ!";
+    }
+    function setFoul(){
+      const btn = document.getElementById("big");
+      btn.className = "big-btn gray";
+      btn.textContent = "FAUL";
+      locked = true;
+    }
+    function setBuzzed(){
+      const btn = document.getElementById("big");
+      btn.className = "big-btn gray";
+      btn.textContent = "SENT";
+      locked = true;
+    }
+
+    const socket = io();
+    socket.emit("join_session", { sid, role: "player", name });
+
+    socket.on("state", (st)=>{
+      active = !!st.active;
+      if (active) setActive(); else setWait();
+    });
+    socket.on("game_state", ({active: a})=>{
+      active = a;
+      if (active) setActive(); else setWait();
+    });
+    socket.on("reset", ()=>{ setWait(); });
+
+    socket.on("you_fouled", ()=>{ setFoul(); });
+
+    // Click handler
+    document.getElementById("big").addEventListener("click", ()=>{
+      if (locked) return;
+      if (!active) {
+        // pressing while WAIT results in FAUL
+        setFoul();
+        socket.emit("buzz", { sid, name });
+        return;
+      } else {
+        // active -> send buzz and lock
+        setBuzzed();
+        socket.emit("buzz", { sid, name });
+      }
+    });
+  </script>
+</body>
+</html>
