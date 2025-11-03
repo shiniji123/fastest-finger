@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Join Room • Fast Finger</title>
+  <link rel="stylesheet" href="/style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>Join Room</h1>
+    <div class="card">
+      <form id="joinForm" class="grid" style="grid-template-columns:1fr 1fr;">
+        <div>
+          <label for="sid">Room Code (4 digits)</label>
+          <input id="sid" type="text" inputmode="numeric" maxlength="4" pattern="\d{4}" placeholder="e.g. 5224" required />
+        </div>
+        <div>
+          <label for="name">Your Name (A–Z or ก–ฮ, ≤20)</label>
+          <input id="name" type="text" maxlength="20" pattern="([A-Za-z]|[\u0E01-\u0E2E]){1,20}" placeholder="e.g. Tuck" required/>
+        </div>
+        <div style="grid-column:1 / -1;">
+          <button class="btn btn-primary" type="submit">Join</button>
+        </div>
+      </form>
+      <p id="err" class="note" style="color:#ef4444; display:none;"></p>
+    </div>
+  </div>
+
+  <script>
+    const $ = s=>document.querySelector(s);
+    function getToken() {
+      let t = localStorage.getItem("player.token");
+      if (!t) { t = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Math.random()).slice(2); localStorage.setItem("player.token", t); }
+      return t;
+    }
+    $("#joinForm").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const sid = $("#sid").value.trim();
+      const name = $("#name").value.trim();
+      if (!/^\d{4}$/.test(sid)) { const el=$("#err"); el.textContent="Room Code must be 4 digits."; el.style.display="block"; return; }
+      if (!/^([A-Za-z]|[\u0E01-\u0E2E]){1,20}$/.test(name)) { const el=$("#err"); el.textContent="Invalid name (letters only A–Z or ก–ฮ, ≤20)."; el.style.display="block"; return; }
+      const token = getToken();
+      const res = await fetch(`/api/session/${sid}/join`, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ name, token })
+      });
+      const data = await res.json().catch(()=>({}));
+      if (res.ok && data.ok) {
+        localStorage.setItem("player.sid", sid);
+        localStorage.setItem("player.name", name);
+        location.href = `/player.html?sid=${sid}&name=${encodeURIComponent(name)}`;
+      } else {
+        const el = $("#err"); el.textContent = data.error || "Failed to join."; el.style.display="block";
+      }
+    });
+  </script>
+</body>
+</html>

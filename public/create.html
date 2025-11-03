@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Create Room • Fast Finger</title>
+  <link rel="stylesheet" href="/style.css"/>
+</head>
+<body class="moderator">
+  <div class="container">
+    <h1>Create Room</h1>
+    <div class="card">
+      <form id="form" class="input-row">
+        <div style="flex:1; min-width:260px;">
+          <label for="roomName">Room Name (letters only A–Z or ก–ฮ, ≤20)</label>
+          <input id="roomName" type="text" maxlength="20" placeholder="e.g. CampAlpha" required pattern="([A-Za-z]|[\u0E01-\u0E2E]){1,20}"/>
+        </div>
+        <button class="btn btn-primary" type="submit">Create</button>
+      </form>
+      <p id="err" class="note" style="color:#ef4444; display:none;"></p>
+      <p class="note">Room code is generated automatically.</p>
+    </div>
+  </div>
+
+  <script>
+    const $ = s=>document.querySelector(s);
+    $("#form").addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      const roomName = $("#roomName").value.trim();
+      if (!/^([A-Za-z]|[\u0E01-\u0E2E]){1,20}$/.test(roomName)) {
+        const el = $("#err"); el.textContent = "Invalid room name (letters only A–Z or ก–ฮ, ≤20)."; el.style.display="block"; return;
+      }
+      const res = await fetch("/api/session/create", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ roomName })
+      });
+      const data = await res.json().catch(()=>({}));
+      if (res.ok) {
+        localStorage.setItem("mod.sid", data.sid);
+        localStorage.setItem("mod.roomName", data.roomName);
+        location.href = `/moderator.html?sid=${data.sid}`;
+      } else {
+        const el = $("#err"); el.textContent = data.error || "Failed to create room."; el.style.display="block";
+      }
+    });
+  </script>
+</body>
+</html>
