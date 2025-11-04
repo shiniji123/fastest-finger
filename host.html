@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast Finger - Host</title> 
+    <link rel="stylesheet" href="/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="host-page-body landscape-only">
+    <div class="header">
+        <h1 id="host-room-name"></h1>
+        <h2>รหัสห้อง: <span id="host-room-code"></span></h2>
+    </div>
+    <div class="host-container">
+        <div class="host-controls card">
+            <h3>ควบคุมเกม</h3>
+            <button id="start-game-btn" class="btn-control btn-primary">Start Game</button> 
+            <button id="reset-game-btn" class="btn-control btn-primary" disabled>Reset Game</button>
+            <button id="export-csv-btn" class="btn-control btn-secondary">Export Results (CSV)</button>
+            
+            <h3>ผู้เล่นที่เข้าร่วม (<span id="player-count">0</span>)</h3>
+            <ul id="player-list"></ul>
+        </div>
+        <div class="host-results card">
+            <h3>ผลการแข่งขัน (Submissions)</h3>
+            <ul id="submission-list"></ul>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+
+        // --- DOM Elements ---
+        const hostRoomName = document.getElementById('host-room-name');
+        const hostRoomCode = document.getElementById('host-room-code');
+        const playerList = document.getElementById('player-list');
+        const playerCount = document.getElementById('player-count');
+        const submissionList = document.getElementById('submission-list');
+        const startGameBtn = document.getElementById('start-game-btn');
+        const resetGameBtn = document.getElementById('reset-game-btn');
+        const exportCsvBtn = document.getElementById('export-csv-btn'); 
+        let currentRoomCode = null;
+        let currentSubmissions = []; 
+
+        // --- ดึง Room Code จาก URL ---
+        const urlParams = new URLSearchParams(window.location.search);
+        currentRoomCode = urlParams.get('roomCode');
+
+        if (!currentRoomCode) {
+            alert('ไม่พบรหัสห้อง กรุณาสร้างห้องใหม่');
+            window.location.href = '/'; 
+        }
+
+        // --- Logic หน้า Host ---
+        startGameBtn.onclick = () => {
+            socket.emit('host-start-game', currentRoomCode);
+        };
+        resetGameBtn.onclick = () => {
+            socket.emit('host-reset-game', currentRoomCode);
+        };
+
+        // --- ฟังก์ชัน Export CSV ---
+        exportCsvBtn.onclick = () => {
+            if (currentSubmissions.length === 0) {
+                alert('ยังไม่มีผลการแข่งขันให้ Export');
+                return;
+            }
+
+            // เพิ่ม \uFEFF (BOM) เพื่อให้ Excel เปิดไฟล์ UTF-8 (ภาษาไทย) ได้ถูกต้อง
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFFลำดับ,ชื่อผู้เล่น,เวลา\r\n";
+
+            currentSubmissions.forEach((sub, index) => {
+                let row = `${index + 1},"${sub.name}","${sub.time}"\r\n`;
+                csvContent += row;
+            });
+
+            var encodedUri = encodeURI(csvContent);
+            var link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `fast_finger_${currentRoomCode}_results.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // ========== Socket Event Listeners ==========
+        socket.on('connect', () => {
+            if (currentRoomCode) {
+                socket.emit('host-join', currentRoomCode);
+            }
+        });
+
+        socket.on('host-data', (data) => {
+            hostRoomName.textContent = data.roomName;
+            hostRoomCode.textContent = data.roomCode;
+            updatePlayerList(data.players);
+            updateSubmissions(data.submissions);
+
+            if (data.isGameActive) {
+                startGameBtn.textContent = 'Game is Active!';
+                startGameBtn.className = 'btn-control btn-green';
+                resetGameBtn.disabled = false;
+            } else {
+                startGameBtn.textContent = 'Start Game';
+                startGameBtn.className = 'btn-control btn-primary';
+                resetGameBtn.disabled = true;
+            }
+        });
+
+        socket.on('update-player-list', (players) => {
+            updatePlayerList(players);
+        });
+
+        function updatePlayerList(players) {
+            playerList.innerHTML = '';
+            playerCount.textContent = players.length;
+            players.forEach(player => {
+                const li = document.createElement('li');
+                li.textContent = player.name;
+                
+                if (player.fouled) {
+                    li.classList.add('foul-player'); // แดง
+                    li.textContent += ' (FOUL)';
+                } else if (player.buzzed) {
+                    li.classList.add('buzzed-player'); // น้ำเงิน
+                    // **[FIX]** เปลี่ยนเป็น (DONE)
+                    li.textContent += ' (DONE)'; 
+                }
+                playerList.appendChild(li);
+            });
+        }
+
+        socket.on('update-submissions', (submissions) => {
+            currentSubmissions = submissions; 
+            updateSubmissions(submissions);
+        });
+
+        function updateSubmissions(submissions) {
+            submissionList.innerHTML = '';
+            submissions.forEach((sub, index) => {
+                const li = document.createElement('li');
+                li.textContent = `#${index + 1} ${sub.name} - ${sub.time}`; 
+                submissionList.appendChild(li);
+            });
+        }
+
+        socket.on('game-started', () => {
+            startGameBtn.textContent = 'Game is Active!';
+            startGameBtn.className = 'btn-control btn-green';
+            resetGameBtn.disabled = false; 
+        });
+
+        socket.on('game-reset', () => {
+            startGameBtn.textContent = 'Start Game';
+            startGameBtn.className = 'btn-control btn-primary'; 
+            resetGameBtn.disabled = true; 
+            currentSubmissions = [];
+            updateSubmissions([]); 
+        });
+
+        socket.on('error-message', (message, forceRedirect = false) => {
+            alert(`เกิดข้อผิดพลาด: ${message}`);
+            if (forceRedirect) {
+                sessionStorage.clear(); 
+                window.location.href = '/'; 
+            }
+        });
+
+    </script>
+</body>
+</html>

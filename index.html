@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast Finger</title> <link rel="stylesheet" href="/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="home-page-body"> 
+    <div class="container">
+        <h1>Fast Finger</h1> <p>ทดสอบความเร็วในการกดปุ่มของคุณ</p>
+
+        <div class="card">
+            <h2>สร้างห้อง (Host)</h2>
+            <input type="text" id="room-name-input" placeholder="กรอกชื่อห้อง (ก-ฮ, a-z, ≤ 20 ตัวอักษร)">
+            <button id="create-room-btn">สร้างห้อง</button>
+        </div>
+
+        <div class="card">
+            <h2>เข้าร่วม (Player)</h2>
+            <input type="text" id="player-name-input" placeholder="กรอกชื่อของคุณ (ก-ฮ, a-z, ≤ 20 ตัวอักษร)">
+            <input type="text" id="room-code-input" placeholder="กรอกรหัสห้อง (4 หลัก)">
+            <button id="join-room-btn">เข้าร่วม</button>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+
+        const roomNameInput = document.getElementById('room-name-input');
+        const createRoomBtn = document.getElementById('create-room-btn');
+        const playerNameInput = document.getElementById('player-name-input');
+        const roomCodeInput = document.getElementById('room-code-input');
+        const joinRoomBtn = document.getElementById('join-room-btn');
+
+        createRoomBtn.onclick = () => {
+            const roomName = roomNameInput.value.trim();
+            if (roomName) {
+                socket.emit('host-create-room', { roomName });
+            } else {
+                alert('กรุณากรอกชื่อห้อง');
+            }
+        };
+
+        joinRoomBtn.onclick = () => {
+            const playerName = playerNameInput.value.trim();
+            const roomCode = roomCodeInput.value.trim();
+            if (playerName && roomCode) {
+                sessionStorage.setItem('playerName', playerName);
+                sessionStorage.setItem('roomCode', roomCode);
+                socket.emit('player-join-room', { roomCode, playerName });
+            } else {
+                alert('กรุณากรอกชื่อผู้เล่นและรหัสห้อง');
+            }
+        };
+
+        socket.on('room-created', (data) => {
+            sessionStorage.setItem('roomName', data.roomName);
+            window.location.href = `/host.html?roomCode=${data.roomCode}`;
+        });
+
+        socket.on('join-success', (data) => {
+            sessionStorage.setItem('roomName', data.roomName);
+            window.location.href = `/player.html?roomCode=${data.roomCode}`;
+        });
+
+        socket.on('error-message', (message) => {
+            alert(`เกิดข้อผิดพลาด: ${message}`);
+            sessionStorage.clear();
+        });
+    </script>
+</body>
+</html>
