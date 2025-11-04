@@ -43,8 +43,11 @@ const sessions = new Map();
 function validateSid(sid) { return typeof sid === "string" && /^\d{4}$/.test(sid); }
 // English a-zA-Z or Thai ก-ฮ only, length 1–20
 function validateHumanName(name) {
-  return typeof name === "string" && /^([A-Za-z]|[\u0E01-\u0E2E]){1,20}$/.test(name.trim());
+  // อนุญาต อังกฤษ a–zA–Z และอักษรไทย+สระ/วรรณยุกต์ (ไม่เอาเลข/ช่องว่าง/สัญลักษณ์), ยาว 1–20
+  return typeof name === "string" &&
+    /^([A-Za-z]|[\u0E01-\u0E2E\u0E30-\u0E3A\u0E40-\u0E4E]){1,20}$/.test(name.trim());
 }
+
 function sessionToJSON(sess) {
   return {
     sid: sess.sid,

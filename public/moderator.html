@@ -66,7 +66,10 @@
       const d = new Date(ts); const pad = (n,z=2)=>(''+n).padStart(z,'0');
       return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}.${pad(d.getMilliseconds(),3)}`;
     }
-    function renderPlayers(list){ playersEl.innerHTML = ""; (list||[]).forEach(n=> addListItem(playersEl, n)); }
+    function renderPlayers(list){
+    playersEl.innerHTML = "";
+    // แสดงคนที่เพิ่งเข้ามาล่าสุดไว้ด้านบน
+    (list || []).slice().reverse().forEach(n => addListItem(playersEl, n));}
     function renderSubs(list){ subsEl.innerHTML = ""; (list||[]).sort((a,b)=>a.ts-b.ts).forEach(s=> addListItem(subsEl, s.name, format(s.ts))); }
     function setActiveUI(active){
       if (active) { startBtn.textContent = "Game is Active!"; startBtn.className="btn btn-green"; }
