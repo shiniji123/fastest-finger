@@ -32,19 +32,27 @@
   </div>
 
   <script>
-    const $ = s=>document.querySelector(s);
+    const $ = s => document.querySelector(s);
+    const TH_EN_NAME_RE = /^([A-Za-z]|[\u0E01-\u0E2E\u0E30-\u0E3A\u0E40-\u0E4E]){1,20}$/;
     function getToken() {
-      let t = localStorage.getItem("player.token");
-      if (!t) { t = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Math.random()).slice(2); localStorage.setItem("player.token", t); }
-      return t;
+    let t = localStorage.getItem("player.token");
+    if (!t) { t = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Math.random()).slice(2); localStorage.setItem("player.token", t); }
+    return t;
+  }
+
+  $("#joinForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const sid = $("#sid").value.trim();
+    const name = $("#name").value.trim();
+
+    if (!/^\d{4}$/.test(sid)) {
+      const el = $("#err"); el.textContent = "Room Code must be 4 digits."; el.style.display = "block"; return;
     }
-    $("#joinForm").addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const sid = $("#sid").value.trim();
-      const name = $("#name").value.trim();
-      if (!/^\d{4}$/.test(sid)) { const el=$("#err"); el.textContent="Room Code must be 4 digits."; el.style.display="block"; return; }
-      if (!/^([A-Za-z]|[\u0E01-\u0E2E]){1,20}$/.test(name)) { const el=$("#err"); el.textContent="Invalid name (letters only A–Z or ก–ฮ, ≤20)."; el.style.display="block"; return; }
-      const token = getToken();
+    if (!TH_EN_NAME_RE.test(name)) {
+      const el = $("#err"); el.textContent = "Invalid name (letters only A–Z or ก–ฮ + สระ/วรรณยุกต์, ≤20)."; el.style.display = "block"; return;
+    }
+
+    const token = getToken();
       const res = await fetch(`/api/session/${sid}/join`, {
         method: "POST",
         headers: {"Content-Type":"application/json"},

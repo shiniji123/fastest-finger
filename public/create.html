@@ -27,13 +27,19 @@
   </div>
 
   <script>
-    const $ = s=>document.querySelector(s);
-    $("#form").addEventListener("submit", async (e)=>{
-      e.preventDefault();
-      const roomName = $("#roomName").value.trim();
-      if (!/^([A-Za-z]|[\u0E01-\u0E2E]){1,20}$/.test(roomName)) {
-        const el = $("#err"); el.textContent = "Invalid room name (letters only A–Z or ก–ฮ, ≤20)."; el.style.display="block"; return;
-      }
+    const $ = s => document.querySelector(s);
+  // ใช้ regex เดียวกับฝั่ง server
+  const TH_EN_NAME_RE = /^([A-Za-z]|[\u0E01-\u0E2E\u0E30-\u0E3A\u0E40-\u0E4E]){1,20}$/;
+
+  $("#form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const roomName = $("#roomName").value.trim();
+    if (!TH_EN_NAME_RE.test(roomName)) {
+      const el = $("#err");
+      el.textContent = "Invalid room name (letters only A–Z or ก–ฮ + สระ/วรรณยุกต์, ≤20).";
+      el.style.display = "block";
+      return;
+    }
       const res = await fetch("/api/session/create", {
         method: "POST",
         headers: {"Content-Type":"application/json"},
