@@ -164,6 +164,17 @@ input:focus{
   color:#fff;background:linear-gradient(135deg,#9ca3af,#6b7280);
   box-shadow:0 12px 26px rgba(107,114,128,.35);
 }
+.big-btn.blue{
+  background: linear-gradient(135deg,#3b82f6,#2563eb);
+  color:#fff;
+  cursor: not-allowed;
+  border-color: rgba(255,255,255,.55);
+}
+.big-btn.blue::after{
+  content:"";
+  position:absolute; inset:-8px; border-radius:inherit;
+  border:6px solid rgba(59,130,246,.35);
+}
 .btn-outline{
   color:var(--fg);
   background:transparent;

@@ -31,7 +31,13 @@
     function setWait(){ const btn = document.getElementById("big"); btn.className="big-btn red"; btn.textContent="WAIT"; locked=false; }
     function setActive(){ const btn = document.getElementById("big"); btn.className="big-btn green"; btn.textContent="BUZZ!"; }
     function setFoul(){ const btn = document.getElementById("big"); btn.className="big-btn gray"; btn.textContent="FOUL"; locked=true; }
-    function setBuzzed(){ const btn = document.getElementById("big"); btn.className="big-btn gray"; btn.textContent="DONE"; locked=true; }
+    function setBuzzed(){
+  const btn = document.getElementById("big");
+  btn.className = "big-btn blue";
+  btn.textContent = "DONE";
+  locked = true;
+}
+
 
     const socket = io();
     socket.emit("join_session", { sid, role: "player", name });
