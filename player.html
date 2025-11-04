@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast Finger - Player</title> <link rel="stylesheet" href="/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body class="player-page-body"> 
+    <div class="header">
+        <h1 id="player-room-name"></h1>
+        <h2 id="player-name-display"></h2>
+    </div>
+    <div class="buzzer-container">
+        <button id="buzzer-btn" class="buzzer wait">
+            <span>WAIT</span>
+        </button>
+    </div>
+
+    <script>
+        const socket = io();
+
+        // --- DOM Elements ---
+        const playerRoomName = document.getElementById('player-room-name');
+        const playerNameDisplay = document.getElementById('player-name-display');
+        const buzzerBtn = document.getElementById('buzzer-btn');
+        const buzzerText = buzzerBtn.querySelector('span');
+
+        let currentRoomCode = null;
+        let currentPlayerName = null;
+
+        // --- ดึง Room Code จาก URL และ Player Name จาก Session Storage ---
+        const urlParams = new URLSearchParams(window.location.search);
+        currentRoomCode = urlParams.get('roomCode');
+        currentPlayerName = sessionStorage.getItem('playerName');
+        let currentRoomName = sessionStorage.getItem('roomName');
+
+        if (!currentRoomCode || !currentPlayerName) {
+            alert('ข้อมูลไม่ครบถ้วน กรุณาเข้าร่วมห้องใหม่');
+            window.location.href = '/';
+        }
+
+        // --- ตั้งค่าเริ่มต้น ---
+        playerRoomName.textContent = currentRoomName ? `ห้อง: ${currentRoomName}` : `รหัส: ${currentRoomCode}`;
+        playerNameDisplay.textContent = `ผู้เล่น: ${currentPlayerName}`;
+
+        // === Player Rejoin/Reload Logic ===
+        socket.on('connect', () => {
+            console.log('Player connected, checking rejoin status.');
+            socket.emit('player-rejoin-check', { roomCode: currentRoomCode, playerName: currentPlayerName });
+        });
+
+        socket.on('rejoin-state', (data) => {
+            // อัปเดตชื่อห้อง (เผื่อชื่อเปลี่ยน)
+            if(data.roomName) sessionStorage.setItem('roomName', data.roomName);
+            playerRoomName.textContent = `ห้อง: ${data.roomName}`;
+            
+            // ตั้งค่าสถานะปุ่มตามสถานะเกมและผู้เล่น
+            if (data.playerState.fouled) {
+                setBuzzerState('foul');
+            } else if (data.playerState.buzzed) {
+                // **[FIX]** เปลี่ยนเป็น 'done'
+                setBuzzerState('done'); 
+            } else if (data.isGameActive) {
+                setBuzzerState('buzz');
+
+            } else {
+                setBuzzerState('wait');
+            }
+        });
+
+        // --- Logic หน้า Player ---
+        buzzerBtn.onclick = () => {
+            if (!buzzerBtn.disabled) {
+                socket.emit('player-buzz', currentRoomCode);
+            }
+        };
+
+        // ========== Socket Event Listeners ==========
+        socket.on('game-started', () => {
+            setBuzzerState('buzz'); 
+        });
+
+        socket.on('game-reset', () => {
+            setBuzzerState('wait'); 
+        });
+
+        socket.on('player-foul', () => {
+            setBuzzerState('foul'); 
+        });
+
+        // **[FIX]** รับ 'player-done' จาก server และเรียก 'done'
+        socket.on('player-done', () => {
+            setBuzzerState('done'); 
+        });
+
+        socket.on('error-message', (message, forceRedirect = false) => {
+            alert(`เกิดข้อผิดพลาด: ${message}`);
+            if (forceRedirect) {
+                sessionStorage.clear(); 
+                window.location.href = '/'; 
+            }
+        });
+
+        // ฟังก์ชันจัดการสถานะปุ่ม
+        function setBuzzerState(state) {
+            buzzerBtn.disabled = false;
+            buzzerBtn.className = 'buzzer ' + state; 
+            
+            switch (state) {
+                case 'wait': // 🔴 แดง
+                    buzzerText.textContent = 'WAIT';
+                    break;
+                case 'buzz': // 🟢 เขียว
+                    buzzerText.textContent = 'BUZZ!';
+                    break;
+                case 'foul': // ⚫ เทา
+                    buzzerText.textContent = 'FOUL';
+                    buzzerBtn.disabled = true;
+                    break;
+                // **[FIX]** เปลี่ยน 'sent' เป็น 'done'
+                case 'done': // 🔵 น้ำเงิน
+                    buzzerText.textContent = 'DONE'; 
+                    buzzerBtn.disabled = true;
+                    break;
+            }
+        }
+    </script>
+</body>
+</html>

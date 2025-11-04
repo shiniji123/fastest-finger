@@ -1,0 +1,360 @@
+/* style.css - NEW HIGH-CONTRAST COMPETITIVE THEME */
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;700;900&display=swap');
+
+/* --- Global / Body Styles (High-Contrast Dark Theme) --- */
+body {
+    font-family: 'Prompt', sans-serif; /* **[NEW FONT]** */
+    /* Deep dark blue/black background */
+    background-color: #12121D; 
+    color: #F0F0F0; /* Light text */
+    margin: 0;
+    padding: 0; /* Full screen experience */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    /* Optional subtle texture */
+    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+}
+
+/* Base Container Styling (Home Page) */
+.container {
+    background: #1C1C2D; 
+    border-radius: 12px;
+    padding: 2rem 2.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    text-align: center;
+    width: 100%;
+    max-width: 450px;
+    z-index: 10;
+}
+
+h1 {
+    color: #FF7F11; /* Bright Orange */
+    margin-bottom: 0.5rem;
+    font-size: 2.8rem;
+    font-weight: 900;
+    text-shadow: 0 0 15px rgba(255, 127, 17, 0.4);
+}
+.container p {
+    color: #AAA;
+    margin-top: 0;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+}
+
+/* Card Styling (Host/Join sections) */
+.card {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.card h2 {
+    margin-top: 0;
+    color: #FFF;
+    font-weight: 700;
+}
+
+/* Input Styling */
+input[type="text"] {
+    width: calc(100% - 24px);
+    padding: 12px;
+    margin-bottom: 1rem;
+    border: 2px solid #444;
+    border-radius: 6px;
+    background-color: #10101A;
+    color: #F0F0F0;
+    font-size: 1rem;
+    font-family: 'Prompt', sans-serif;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+input[type="text"]:focus {
+    outline: none;
+    border-color: #FF7F11;
+    box-shadow: 0 0 10px rgba(255, 127, 17, 0.3);
+}
+
+/* Button Styling (Home Page) */
+.container button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Prompt', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #FF7F11;
+    color: #12121D;
+    box-shadow: 0 4px 15px rgba(255, 127, 17, 0.2);
+}
+.container button:hover {
+    background-color: #FF983C;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 127, 17, 0.3);
+}
+
+/* --- 2. Host Page --- */
+.host-page-body {
+    display: block;
+    padding: 1.5rem;
+    align-items: flex-start;
+}
+.host-page-body .header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.host-page-body .header h1 {
+    font-size: 2.2rem;
+    margin: 0;
+}
+.host-page-body .header h2 {
+    font-size: 1.2rem;
+    margin-top: 0.5rem;
+    color: #AAA;
+}
+.host-page-body .header h2 span {
+    color: #FF7F11;
+    font-weight: 700;
+}
+
+.host-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.host-controls, .host-results {
+    flex: 1;
+    min-width: 300px;
+    background: #1C1C2D;
+    border-radius: 8px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+.host-controls h3, .host-results h3 {
+    margin-top: 0;
+    color: #FF7F11;
+    border-bottom: 1px solid #444;
+    padding-bottom: 0.5rem;
+}
+
+/* Host Buttons */
+.btn-control {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Prompt', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 0.5rem;
+}
+.btn-control.btn-primary {
+    background-color: #FF7F11;
+    color: #12121D;
+}
+.btn-control.btn-primary:hover:not(:disabled) {
+    background-color: #FF983C;
+    transform: translateY(-2px);
+}
+.btn-control.btn-secondary {
+    background-color: #333;
+    color: #F0F0F0;
+    border: 1px solid #555;
+}
+.btn-control.btn-secondary:hover:not(:disabled) {
+    background-color: #444;
+}
+.btn-control.btn-green {
+    background-color: #2ECC71;
+    color: #12121D;
+}
+.btn-control:disabled {
+    background-color: #444;
+    color: #777;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Host Lists */
+#player-list, #submission-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 40vh;
+    overflow-y: auto;
+}
+#player-list li, #submission-list li {
+    background: #12121D;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #333;
+    font-weight: 700;
+}
+#player-list li.foul-player {
+    background: #E74C3C; /* Red bg */
+    color: #FFF;
+    border-color: #E74C3C;
+}
+#player-list li.buzzed-player {
+    background: #3498DB; /* Blue bg */
+    color: #FFF;
+    border-color: #3498DB;
+}
+
+
+/* --- 4. Player Page Buzzer --- */
+.player-page-body {
+    padding: 1rem;
+    box-sizing: border-box;
+}
+.player-page-body .header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+.player-page-body .header h1 {
+    font-size: 1.8rem;
+    margin: 0;
+}
+.player-page-body .header h2 {
+    font-size: 1.1rem;
+    color: #AAA;
+    margin: 0.25rem 0 0;
+}
+
+.buzzer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1; 
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.buzzer {
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    border: 10px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 -5px 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+.buzzer span {
+    font-size: 4rem;
+    font-weight: 900;
+    color: #FFF;
+    text-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+    line-height: 1.2;
+}
+.buzzer:active:not(:disabled) {
+    transform: scale(0.95);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3), inset 0 -3px 10px rgba(0, 0, 0, 0.2);
+}
+.buzzer:disabled {
+    cursor: not-allowed;
+    filter: grayscale(50%);
+    opacity: 0.7;
+}
+
+/* === [FIX] BUZZER STATES === */
+.buzzer.wait {
+    background: linear-gradient(145deg, #E74C3C, #C0392B); /* 🔴 แดง */
+}
+.buzzer.buzz {
+    background: linear-gradient(145deg, #2ECC71, #27AE60); /* 🟢 เขียว */
+}
+.buzzer.foul {
+    background: linear-gradient(145deg, #555, #333); /* ⚫ เทา */
+}
+.buzzer.done {
+    background: linear-gradient(145deg, #100584, #4113a4); /* 🔵 น้ำเงิน */
+}                                                                                                         
+
+
+/* --- 5. Orientation & Responsive --- */
+.landscape-only::before {
+    content: 'กรุณาใช้งานในแนวนอน (Landscape)';
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #12121D; 
+    color: #FF7F11; 
+    z-index: 1000;
+    font-size: 2rem;
+    text-align: center;
+    padding-top: 40vh;
+    box-sizing: border-box;
+    text-shadow: 0 0 10px rgba(255, 127, 17, 0.5);
+}
+
+@media (orientation: portrait) {
+    /* **[FIX]** ให้มีผลเฉพาะ Host Page ที่มี .landscape-only เท่านั้น */
+    .host-page-body.landscape-only::before {
+        display: flex; /* **[FIX]** เปลี่ยนเป็น flex */
+        justify-content: center;
+        align-items: center;
+        padding-top: 0; /* ลบ padding เดิม */
+    }
+    
+    .host-page-body.landscape-only { 
+        overflow: hidden;
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+    }
+    .host-page-body.landscape-only .header,
+    .host-page-body.landscape-only .host-container {
+        display: none; /* **[FIX]** ซ่อนเนื้อหาแทน visibility */
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .host-container {
+        flex-direction: column;
+    }
+    .buzzer {
+        width: 250px;
+        height: 250px;
+    }
+    .buzzer span {
+        font-size: 3rem;
+    }
+}
+@media (max-width: 480px) {
+    .container {
+        padding: 1rem 1.5rem;
+    }
+    h1 {
+        font-size: 2.2rem;
+    }
+    .buzzer {
+        width: 200px;
+        height: 200px;
+    }
+    .buzzer span {
+        font-size: 2.5rem;
+    }
+}
